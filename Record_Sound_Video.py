@@ -136,8 +136,8 @@ def Video():
 
 now = str(datetime.now())[:19].replace(":",'_')
 sleep(1)
-t1 = threading.Thread(target = Audio)
-t2 = threading.Thread(target = Video)
+t1 = threading.Thread(target = Audio,daemon = True)
+t2 = threading.Thread(target = Video,daemon = True)
 event = threading.Event()
 event.clear()
 
