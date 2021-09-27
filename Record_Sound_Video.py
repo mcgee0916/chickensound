@@ -135,15 +135,18 @@ def Video():
     cap.release()
 
 now = str(datetime.now())[:19].replace(":",'_')
-
+sleep(1)
 t1 = threading.Thread(target = Audio)
 t2 = threading.Thread(target = Video)
 event = threading.Event()
 event.clear()
+
 for i in (t1,t2):
     i.start()
 for i in (t1,t2):
     i.join()
+
+
 
 try:
     sound = AudioFileClip(WAVE_OUTPUT_FILENAME)
@@ -217,7 +220,7 @@ try:
     #ftp.retrlines('LIST')
     ftp.cwd('07_Experimental data/NCHU_vaccine/C/filter/2021_10_08')
     #ftp.retrlines('LIST')
-    localfile = file_HM + '/butterworthfilter/' + 'BW_' + datetime.now().strftime("%Y%m%d_%H%M") + '.wav'
+    localfile = file_HM + '/butterworthfilter/' + 'BW_' + localtime + '.wav'
     f = open(localfile, 'rb')
     ftp.storbinary('STOR %s' % os.path.basename(localfile), f)
     print("butterworth upload successful.")
