@@ -153,9 +153,15 @@ Recording =False
 sound = AudioFileClip(WAVE_OUTPUT_FILENAME)
 film = VideoFileClip(VIDEO_OUTPUT_FILENAME)
 ratio = sound.duration / film.duration
-combine = (film.fl_time(lambda t:t/ratio,apply_to=['video']).set_end(sound.duration))
-Combine = CompositeVideoClip([combine]).set_audio(sound)
-Combine.write_videofile(COMBINE_OUTPUT_FILENAME,codec='libx264',fps=FPS)
+
+while(1):
+    try:
+        combine = (film.fl_time(lambda t:t/ratio,apply_to=['video']).set_end(sound.duration))
+        Combine = CompositeVideoClip([combine]).set_audio(sound)
+        Combine.write_videofile(COMBINE_OUTPUT_FILENAME,codec='libx264',fps=FPS)
+        break
+    except:
+        pass
 
 
     
