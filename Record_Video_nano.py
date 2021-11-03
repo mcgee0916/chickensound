@@ -1,3 +1,4 @@
+#!/usr/bin/sh
 import wave
 import threading
 from os import remove, mkdir,listdir
@@ -17,6 +18,7 @@ from scipy.io import wavfile
 from scipy import signal
 import numpy as np
 import soundfile as sf
+os.system("export FFMPEG_BINARY='auto-detect'")
 
 
 
@@ -75,8 +77,8 @@ CHANNELS = 1
 FORMAT = pyaudio.paInt16
 RATE = 44100
 Recording = True
-RECORD_SECOND = 15
-FPS = 30
+RECORD_SECOND =  120
+FPS = 10
 def Audio():
     p = pyaudio.PyAudio()
     print("Audio is ready")
@@ -109,13 +111,14 @@ def Audio():
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
-WIDTH = 640
-HEIGHT = 480
+WIDTH = 1280
+HEIGHT = 720
 
 def Video():
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
+    cap.set(cv2.CAP_PROP_FOCUS,250)
     print("Video is ready")
     event.set()
     sleep(3)
@@ -123,17 +126,20 @@ def Video():
     repeat =0
     aviFile = cv2.VideoWriter(VIDEO_OUTPUT_FILENAME,cv2.VideoWriter_fourcc(*'XVID'),FPS,(WIDTH,HEIGHT))
     print("successful capture"),
+    starttime=datetime.now()
     while Recording :
-        repeat +=1
+
         ret,frame = cap.read()
         if not ret:
             print("video failed!")
-            
+        endtime=datetime.now()    
         aviFile.write(frame)
-        if repeat>= FPS*RECORD_SECOND:
+	print(endtime-starttime).seconds
+        if (endtime-starttime).seconds>= RECORD_SECOND:
             break
     aviFile.release()
     cap.release()
+    
 
 now = str(datetime.now())[:19].replace(":",'_')
 sleep(1)
@@ -148,20 +154,14 @@ for i in (t1,t2):
     i.join()
 Recording =False
 
-
-
-sound = AudioFileClip(WAVE_OUTPUT_FILENAME)
+sound = AudioFileClip(WAVE_OUTPUT_FILENAME,fps=44100)
 film = VideoFileClip(VIDEO_OUTPUT_FILENAME)
 ratio = sound.duration / film.duration
+print(sound.duration,"----",film.duration,"-----",film.fps)
+combine = (film.fl_time(lambda t:t/ratio,apply_to=['video']).set_end(sound.duration))
+Combine = CompositeVideoClip([combine]).set_audio(sound)
+Combine.write_videofile(COMBINE_OUTPUT_FILENAME,codec='libx264',fps=FPS)
 
-while(1):
-    try:
-        combine = (film.fl_time(lambda t:t/ratio,apply_to=['video']).set_end(sound.duration))
-        Combine = CompositeVideoClip([combine]).set_audio(sound)
-        Combine.write_videofile(COMBINE_OUTPUT_FILENAME,codec='libx264',fps=FPS)
-        break
-    except:
-        pass
 
 
     
@@ -231,3 +231,4 @@ try:
     print("butterworth upload successful.")
 except:
     print("upload filter failed")
+os.remove(file_y)
